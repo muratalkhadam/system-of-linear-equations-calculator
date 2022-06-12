@@ -50,15 +50,18 @@ class Matrix:
 
     # повертаэ детермінант матриці
     def get_determinate(self):
-        return np.linalg.det(self.__matr)
+        if self.__rows != 2:
+            return np.linalg.det(self.__matr)
+        else:
+            return self.__matr[0][0] * self.__matr[1][1] - self.__matr[0][1] * self.__matr[1][0]
 
     # повертає обернену матрицю
     @staticmethod
     def get_invertible_matr(additional, det, temp):
-        iter = temp
+        oper = temp
         result = additional * (1 / det)
-        iter *= additional.__rows
-        return result, iter
+        oper *= additional.__rows
+        return result, oper
 
     # повертає копію матрциі
     def copy_matr(self):
@@ -79,7 +82,8 @@ class Matrix:
 
     # повертає приєднану матрицю
     def get_additional_matr(self, temp):
-        iter = temp
+        oper = temp
+        iter = 0
         matr = []
         for i in range(self.__rows):
             row = []
@@ -87,8 +91,9 @@ class Matrix:
                 a = self.__get_alg_complements(i, j)
                 row.append(a)
                 iter += 1
+            oper += 1
             matr.append(row)
-        return Matrix(self.__rows, self.__columns, matr), iter
+        return Matrix(self.__rows, self.__columns, matr), oper, (iter-oper)
 
     # перевіряє чи матриця вироджена
     def is_singular(self):

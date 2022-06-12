@@ -25,7 +25,7 @@ class SolutionWindow:
         self.__matr_a: Matrix = A
         self.__matr_b: Matrix = B
 
-        self.__iterations = 0
+        self.__operations = 0
 
     # повертає корінь вікна
     def get_root(self):
@@ -60,28 +60,30 @@ class SolutionWindow:
 
         for j in range(n):
             L.set_matr(1.0, j, j)
-            self.__iterations += 1
+            self.__operations += 1
 
             for i in range(j + 1):
                 s1 = 0
                 for k in range(i):
+                    #
                     s1 += U.get_matr()[k][j] * L.get_matr()[i][k]
-                    self.__iterations += 1
+                    self.__operations += 1
 
                 U.set_matr(PA.get_matr()[i][j] - s1, i, j)
-                self.__iterations += 1
+                self.__operations += 1
 
             for i in range(j, n):
                 s2 = 0
                 for k in range(j):
+                    #
                     s2 += U.get_matr()[k][j] * L.get_matr()[i][k]
-                    self.__iterations += 1
+                    self.__operations += 1
 
                 L.set_matr((PA.get_matr()[i][j] - s2) / U.get_matr()[j][j], i, j)
-                self.__iterations += 1
+                self.__operations += 1
 
-        Pb = Matrix(P.get_rows(), self.__matr_b.get_columns(), np.array(P.mult(self.__matr_b)).reshape(P.get_rows(),
-                                                                self.__matr_b.get_columns()))
+        Pb = Matrix(P.get_rows(), self.__matr_b.get_columns(), np.array(P.mult(self.__matr_b)).
+                    reshape(P.get_rows(), self.__matr_b.get_columns()))
         y_matr = L.solve_triangle(Pb.get_matr(), lower=True)
         y = Matrix(len(y_matr), len(y_matr[0]), y_matr)
 
@@ -92,15 +94,16 @@ class SolutionWindow:
     def matrix_method(self):
         a_determinant = self.__matr_a.get_determinate()
 
-        additional_matrix, self.__iterations = self.__matr_a.get_additional_matr(self.__iterations)
-
+        additional_matrix, self.__operations, delta = self.__matr_a.get_additional_matr(self.__operations)
         additional_matrix.transpose()
 
-        inverted, self.__iterations = self.__matr_a.get_invertible_matr(
-            additional_matrix, a_determinant, self.__iterations
+        inverted, iter = self.__matr_a.get_invertible_matr(
+            additional_matrix, a_determinant, self.__operations
         )
 
         x = inverted.mult(self.__matr_b)
+        self.__operations = iter
+        self.__operations += delta
 
         return np.array(x).reshape(len(x), 1)
 
@@ -113,7 +116,7 @@ class SolutionWindow:
 
             for i in range(1, self.__matr_a.get_rows()):
                 L.set_matr(self.__matr_a.get_matr()[i][0] / L.get_matr()[0][0], i, 0)
-                self.__iterations += 1
+                self.__operations += 1
 
             for i in range(1, self.__matr_a.get_rows()):
                 for j in range(1, self.__matr_a.get_columns()):
@@ -121,18 +124,18 @@ class SolutionWindow:
                         temp = 0
                         for k in range(i):
                             temp += L.get_matr()[i][k] ** 2
-                            self.__iterations += 1
+                            self.__operations += 1
 
                         L.set_matr(math.sqrt(self.__matr_a.get_matr()[i][i] - temp), i, i)
-                        self.__iterations += 1
+                        self.__operations += 1
                     if j > i:
                         temp = 0
                         for k in range(i):
                             temp += L.get_matr()[i][k] * L.get_matr()[j][k]
-                            self.__iterations += 1
+                            self.__operations += 1
 
                         L.set_matr((self.__matr_a.get_matr()[j][i] - temp) / L.get_matr()[i][i], j, i)
-                        self.__iterations += 1
+                        self.__operations += 1
 
             L_trans = L.copy_matr()
             L_trans.transpose()
@@ -180,7 +183,7 @@ class SolutionWindow:
             for i in range(len(roots)):
                 root_to_display = round(roots[i][0], 3)
                 temp += f"\nX{i+1} = {root_to_display}"
-            temp += f"\nAmount of operations is {self.__iterations}"
+            temp += f"\nAmount of operations is {self.__operations}\n"
 
             self.__text.insert(1.0, temp)
             save_button = tk.Button(self.__root, text="Save as file", command=self.save_as_file, width=10)

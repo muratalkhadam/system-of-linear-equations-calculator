@@ -1,5 +1,5 @@
 from classes.SolutionWindow import *
-from constants import FONT, START_ROW_FOR_ENTRIES, DEFAULT_PICK
+from constants import FONT, START_ROW_FOR_ENTRIES, DEFAULT_PICK, HEIGHT, WIDTH
 
 import random
 
@@ -22,7 +22,7 @@ class MainWindow:
         self.__frame_for_coeff = tk.Frame(self.__root, background=COLOR)
         self.__picked_method = tk.StringVar(value=DEFAULT_PICK)
 
-    # створрює вікно рішення
+    # створює вікно рішення
     def __solve_by_method(self, matr_a, matr_b):
         solution = SolutionWindow(self.__root, self.__picked_method.get(), matr_a, matr_b,
                                   title=self.__picked_method.get())
@@ -36,6 +36,7 @@ class MainWindow:
 
     # перевіряє чи сходиться обранний метод для введеної/згенерованої матриці
     def __is_valid_method(self, matr_a, matr_b):
+
         if self.__picked_method.get() == "LUP-метод" or self.__picked_method.get() == "Матричний метод":
             if not matr_a.is_singular():
                 self.__solve_by_method(matr_a, matr_b)
@@ -94,7 +95,7 @@ class MainWindow:
 
         self.__clear_grid()
         self.__frame_for_coeff.grid(row=2, column=0, sticky="we")
-        self.__root.geometry("1200x450")
+        self.__root.geometry(f"{HEIGHT}x{WIDTH}")
 
         index = 0
         for i in range(amount):
