@@ -7,6 +7,7 @@ class Matrix:
         self.__columns = columns
         self.__matr = np.array(matr)
 
+    # перевантаження оператора множення для добутку матриці на число
     def __mul__(self, num):
         a = Matrix(self.__rows, self.__columns, self.__matr)
         for i in range(a.__rows):
@@ -14,29 +15,52 @@ class Matrix:
                 a.__matr[i][j] = a.__matr[i][j] * num
         return a
 
-    def set_matr(self, value, i, j):
-        self.__matr[i][j] = value
-
-    def get_matr(self):
-        return self.__matr
-
-    def get_rows(self):
-        return self.__rows
-
-    def get_columns(self):
-        return self.__columns
-
-    def get_determinate(self):
-        return np.linalg.det(self.__matr)
-
-    def delete_row(self, index):
+    # видалення рядка за індексом
+    def __delete_row(self, index):
         self.__matr = np.delete(self.__matr, index, 0)
         self.__rows -= 1
 
-    def delete_column(self, index):
+    # видалення стовпця за індексом
+    def __delete_column(self, index):
         self.__matr = np.delete(self.__matr, index, 1)
         self.__columns -= 1
 
+    # повертає значення алгебраїчного доповнення
+    def __get_alg_complements(self, i, j):
+        temp = Matrix(self.__rows, self.__columns, self.__matr)
+        temp.__delete_row(i)
+        temp.__delete_column(j)
+        return (-1)**(i+j) * temp.get_determinate()
+
+    # встановлюю значення матриці за рядком та стопцем
+    def set_matr(self, value, i, j):
+        self.__matr[i][j] = value
+
+    # повертає матрицю
+    def get_matr(self):
+        return self.__matr
+
+    # повертає кількість рядочків
+    def get_rows(self):
+        return self.__rows
+
+    # повертає кількість стовпчиків
+    def get_columns(self):
+        return self.__columns
+
+    # повертаэ детермінант матриці
+    def get_determinate(self):
+        return np.linalg.det(self.__matr)
+
+    # повертає обернену матрицю
+    @staticmethod
+    def get_invertible_matr(additional, det, temp):
+        iter = temp
+        result = additional * (1 / det)
+        iter *= additional.__rows
+        return result, iter
+
+    # повертає копію матрциі
     def copy_matr(self):
         temp = []
         for i in range(self.__rows):
@@ -46,40 +70,34 @@ class Matrix:
             temp.append(row)
         return Matrix(self.__rows, self.__columns, temp)
 
-    # алгебраичекое дополнение
-    def get_alg_complements(self, i, j):
-        temp = Matrix(self.__rows, self.__columns, self.__matr)
-        temp.delete_row(i)
-        temp.delete_column(j)
-        return (-1)**(i+j+2) * temp.get_determinate()
-
+    # транспонування матриці
     def transpose(self):
         temp = self.copy_matr()
         for i in range(self.__rows):
             for j in range(self.__columns):
                 self.__matr[i][j] = temp.__matr[j][i]
 
-    # присоединённая матрица
-    def get_adjugate_matr(self):
+    # повертає приєднану матрицю
+    def get_additional_matr(self, temp):
+        iter = temp
         matr = []
         for i in range(self.__rows):
             row = []
             for j in range(self.__columns):
-                a = self.get_alg_complements(i, j)
+                a = self.__get_alg_complements(i, j)
                 row.append(a)
+                iter += 1
             matr.append(row)
-        return Matrix(self.__rows, self.__columns, matr)
+        return Matrix(self.__rows, self.__columns, matr), iter
 
+    # перевіряє чи матриця вироджена
     def is_singular(self):
         if self.get_determinate() == 0:
             return True
         else:
             return False
 
-    def get_invertible_matr(self, additional, det):
-        result = additional * (1 / det)     # 1 / det(A) * (C*)transpose | matrix * const
-        return result
-
+    # множення двох матриць
     def mult(self, a):
         C = []
         for i in range(self.__rows):
@@ -90,6 +108,7 @@ class Matrix:
                 C.append(total)
         return C
 
+    # перевірка чи матриця симетрична
     def is_simetrical(self):
         for i in range(1, len(self.__matr)):
             for j in range(i):
@@ -97,6 +116,7 @@ class Matrix:
                     return False
         return True
 
+    # вирішює рівняння виду Ax=B для трикутних матриць
     def solve_triangle(self, b, lower=True):
         res = [[0] for _ in range(self.__rows)]
         col = self.__columns
@@ -115,20 +135,17 @@ class Matrix:
                 for j in range(i + 1, col):
                     temp -= self.__matr[i][j] * res[j][0]
                 res[i][0] = temp / self.__matr[i][i]
-
         return res
 
+    # повертає матрицю перестановок (опорна матриця)
     def pivot_matrix(self):
-        """Returns the pivoting matrix for M, used in Doolittle's method."""
         m = self.__rows
-        # Create an identity matrix, with floating point values
+
         id_mat = [[float(i == j) for i in range(m)] for j in range(m)]
-        # Rearrange the identity matrix such that the largest element of
-        # each column of M is placed on the diagonal of of M
+
         for j in range(m):
             row = max(range(j, m), key=lambda i: abs(self.__matr[i][j]))
             if j != row:
-                # Swap the rows
                 id_mat[j], id_mat[row] = id_mat[row], id_mat[j]
 
         return Matrix(m, m, id_mat)

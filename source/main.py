@@ -1,9 +1,9 @@
 from constants import HEIGHT, WIDTH
-from classes.Window import Window
+from classes.MainWindow import MainWindow
 
 
 def main():
-    win = Window(title="System of linear equations calculator", height=HEIGHT, width=WIDTH)
+    win = MainWindow(title="System of linear equations calculator", height=HEIGHT, width=WIDTH)
     win.run()
 
 
